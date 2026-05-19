@@ -1,0 +1,16 @@
+{
+  "name": "mr-sky-bot",
+  "version": "2.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "latest",
+    "pino": "latest"
+  }
+}
