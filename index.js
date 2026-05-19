@@ -1,49 +1,49 @@
 import makeWASocket, { useMultiFileAuthState } from "@whiskeysockets/baileys";
 import pino from "pino";
 
+console.log("STARTING BOT...");
+
 async function startBot() {
-    const { state, saveCreds } = await useMultiFileAuthState("./session");
+    try {
+        const { state, saveCreds } = await useMultiFileAuthState("./session");
 
-    const sock = makeWASocket({
-        auth: state,
-        printQRInTerminal: true,
-        logger: pino({ level: "silent" })
-    });
+        const sock = makeWASocket({
+            auth: state,
+            printQRInTerminal: true,
+            logger: pino({ level: "debug" })
+        });
 
-    sock.ev.on("creds.update", saveCreds);
+        sock.ev.on("creds.update", saveCreds);
 
-    sock.ev.on("messages.upsert", async ({ messages }) => {
-        const msg = messages[0];
-        if (!msg.message) return;
+        sock.ev.on("connection.update", (update) => {
+            console.log("CONNECTION UPDATE:", update);
+        });
 
-        const text =
-            msg.message.conversation ||
-            msg.message.extendedTextMessage?.text;
+        sock.ev.on("close", () => {
+            console.log("BOT CLOSED ❌");
+        });
 
-        const from = msg.key.remoteJid;
+        sock.ev.on("messages.upsert", async ({ messages }) => {
+            const msg = messages[0];
+            if (!msg.message) return;
 
-        if (!text) return;
+            const text =
+                msg.message.conversation ||
+                msg.message.extendedTextMessage?.text;
 
-        if (text === ".menu") {
-            await sock.sendMessage(from, {
-                text: "🤖 MR SKY BOT MENU\n.ping\n.menu\n.alive"
-            });
-        }
+            const from = msg.key.remoteJid;
 
-        if (text === ".ping") {
-            await sock.sendMessage(from, {
-                text: "🏓 MR SKY BOT ONLINE"
-            });
-        }
+            console.log("MESSAGE:", text);
 
-        if (text === ".alive") {
-            await sock.sendMessage(from, {
-                text: "✅ BOT IS RUNNING"
-            });
-        }
-    });
+            if (text === ".ping") {
+                await sock.sendMessage(from, { text: "🏓 SKY BOT OK" });
+            }
+        });
 
-    console.log("MR SKY BOT STARTED 🚀");
+        console.log("BOT STARTED 🚀");
+    } catch (err) {
+        console.log("ERROR CAUGHT:", err);
+    }
 }
 
 startBot();
